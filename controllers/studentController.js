@@ -15,22 +15,35 @@ exports.getAllStudents = async (req, res, next) => {
   try {
     const { branch } = req.query;
     const filter = branch ? { branch } : {};
-    const students = await Student.find(filter).populate('courses', 'title').lean();
+
+    const students = await Student.find(filter)
+      .populate('branch', 'name')      // Return only the branch NAME
+      .populate('courses', 'title')
+      .lean();
+
     res.json(students);
   } catch (err) {
     next(err);
   }
 };
 
+
 exports.getStudentById = async (req, res, next) => {
   try {
-    const student = await Student.findById(req.params.id).populate('courses').lean();
-    if (!student) return res.status(404).json({ msg: 'Student not found' });
+    const student = await Student.findById(req.params.id)
+      .populate('branch', 'name')
+      .populate('courses', 'title')
+      .lean();
+
+    if (!student)
+      return res.status(404).json({ msg: 'Student not found' });
+
     res.json(student);
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.updateStudent = async (req, res, next) => {
   try {
