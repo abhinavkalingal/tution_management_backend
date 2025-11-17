@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 
-const invoiceSchema = new mongoose.Schema({
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant", required: true },
-  branchId: { type: mongoose.Schema.Types.ObjectId, ref: "Branch", required: true },
+const InvoiceSchema = new mongoose.Schema({
+  tenantId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  branchId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  studentId: { type: mongoose.Schema.Types.ObjectId, required: true },
   amount: { type: Number, required: true },
+  status: { type: String, enum: ["PAID", "UNPAID", "PARTIAL"], default: "UNPAID" },
   dueDate: { type: Date },
-  status: { type: String, enum: ["PAID", "UNPAID", "OVERDUE"], default: "UNPAID" },
-  createdAt: { type: Date, default: Date.now }
-});
+  description: { type: String },
+}, { timestamps: true });
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+module.exports = mongoose.model("Invoice", InvoiceSchema);
