@@ -1,6 +1,9 @@
+// src/utils/jwt.js
 const jwt = require("jsonwebtoken");
 
 exports.generateToken = (user) => {
+  const secret = process.env.JWT_SECRET ;
+  const expire = process.env.JWT_EXPIRE ; // default to 7 days
   return jwt.sign(
     {
       id: user._id,
@@ -8,7 +11,7 @@ exports.generateToken = (user) => {
       tenantId: user.tenantId,
       branchId: user.branchId,
     },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE }
+    secret,
+    { expiresIn: expire }
   );
 };

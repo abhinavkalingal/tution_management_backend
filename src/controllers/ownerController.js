@@ -1,3 +1,4 @@
+// src/controllers/ownerController.js
 const Branch = require("../models/Branch");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
@@ -23,18 +24,8 @@ exports.createBranch = async (req, res) => {
 exports.listBranches = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const { page = 1, limit = 50, q, includeInactive=false } = req.query;
-    const query = { tenantId };
-    if (!includeInactive) query.isActive = true;
-    if (q) query.name = { $regex: q, $options: "i" };
-
-    const skip = (Math.max(1,page)-1)*Number(limit);
-    const [branches, total] = await Promise.all([
-      Branch.find(query).skip(skip).limit(Number(limit)).sort({ createdAt: -1 }),
-      Branch.countDocuments(query)
-    ]);
-
-    res.json({ branches, total, page: Number(page), limit: Number(limit) });
+    const branches = await Branch.find({ tenantId });
+    res.json({ branches });
   } catch (err) {
     console.error("listBranches:", err);
     res.status(500).json({ message: err.message });
@@ -97,7 +88,7 @@ exports.createBranchAdmin = async (req, res) => {
     const hashed = await bcrypt.hash(plain, 10);
 
     const user = await User.create({ tenantId, branchId, name, email, phone, password: hashed, role: "ADMIN", isActive: true });
-    // In production send email with credentials (not returning password)
+    // You should send email in production
     res.status(201).json({ message: "Branch admin created", user: { id: user._id, email: user.email }, password: plain });
   } catch (err) {
     console.error("createBranchAdmin:", err);
@@ -108,18 +99,11 @@ exports.createBranchAdmin = async (req, res) => {
 exports.listAdmins = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const { branchId, page = 1, limit = 50, q } = req.query;
+    const { branchId } = req.query;
     const query = { tenantId, role: "ADMIN" };
     if (branchId) query.branchId = branchId;
-    if (q) query.$or = [{ name: { $regex: q, $options: "i" } }, { email: { $regex: q, $options: "i" } }];
-
-    const skip = (Math.max(1,page)-1)*Number(limit);
-    const [admins, total] = await Promise.all([
-      User.find(query).select("-password").skip(skip).limit(Number(limit)).sort({ createdAt: -1 }),
-      User.countDocuments(query)
-    ]);
-
-    res.json({ admins, total, page: Number(page), limit: Number(limit) });
+    const admins = await User.find(query).select("-password");
+    res.json({ admins });
   } catch (err) {
     console.error("listAdmins:", err);
     res.status(500).json({ message: err.message });

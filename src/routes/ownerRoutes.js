@@ -1,3 +1,4 @@
+// src/routes/ownerRoutes.js
 const express = require("express");
 const router = express.Router();
 const owner = require("../controllers/ownerController");

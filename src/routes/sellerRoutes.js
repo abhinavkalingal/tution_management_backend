@@ -1,3 +1,4 @@
+// src/routes/sellerRoutes.js
 const express = require("express");
 const router = express.Router();
 const seller = require("../controllers/sellerController");

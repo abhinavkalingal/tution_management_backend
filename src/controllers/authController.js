@@ -1,8 +1,9 @@
+// src/controllers/authController.js
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { generateToken } = require("../utils/jwt");
 
-// Register seller (already used earlier)
+// Register seller
 exports.registerSeller = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -13,7 +14,12 @@ exports.registerSeller = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({
-      name, email, phone, password: hashed, role: "SELLER"
+      name: name || "Seller",
+      email,
+      phone,
+      password: hashed,
+      role: "SELLER",
+      isActive: true
     });
 
     res.status(201).json({ message: "Seller created", user: { id: user._id, email: user.email } });
