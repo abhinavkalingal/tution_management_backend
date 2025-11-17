@@ -1,50 +1,76 @@
 const Tenant = require("../models/Tenant");
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
-// Seller creates tenant + auto create OWNER
+// Create tenant
 exports.createTenant = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
-
-    if (!name || !email) {
-      return res.status(400).json({ message: "Tenant name & owner email required" });
-    }
-
-    // Create Tenant
-    const tenant = await Tenant.create({
-      name,
-      email,
-      phone,
-      address,
-      createdBy: req.user.id
-    });
-
-    // Auto-create owner
-    const defaultPassword = "owner123"; // You can generate random password
-    const hashed = await bcrypt.hash(defaultPassword, 10);
-
-    const owner = await User.create({
-      name: `${name} Owner`,
-      email: email,
-      password: hashed,
-      role: "OWNER",
-      tenantId: tenant._id,
-      isActive: true
-    });
-
-    res.status(201).json({
-      message: "Tenant created + Owner account generated",
-      tenant,
-      owner: {
-        id: owner._id,
-        email: owner.email,
-        password: defaultPassword
-      }
-    });
-
+    const tenant = await Tenant.create(req.body);
+    res.json({ message: "Tenant created", tenant });
   } catch (err) {
-    console.log("createTenant error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
+// List tenants
+exports.listTenants = async (req, res) => {
+  try {
+    const tenants = await Tenant.find();
+    res.json({ tenants });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get tenant
+exports.getTenant = async (req, res) => {
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    res.json({ tenant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update tenant
+exports.updateTenant = async (req, res) => {
+  try {
+    const tenant = await Tenant.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json({ message: "Updated", tenant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Assign plan
+exports.assignPlan = async (req, res) => {
+  try {
+    const tenant = await Tenant.findByIdAndUpdate(
+      req.params.id,
+      { plan: req.body },
+      { new: true }
+    );
+    res.json({ message: "Plan updated", tenant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Set status
+exports.setStatus = async (req, res) => {
+  try {
+    const tenant = await Tenant.findByIdAndUpdate(
+      req.params.id,
+      { status: req.body.status },
+      { new: true }
+    );
+    res.json({ message: "Status updated", tenant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = exports;
+
